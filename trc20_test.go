@@ -71,8 +71,7 @@ func TestTransfer(t *testing.T) {
 		return
 	}
 
-	hexKey := "08a933aa659edd840b431fd9b460ed033fd985218c2be699ace8e3fa0ae20192"
-	//hexKey := "YOUR_PRIVATE_KEY"
+	hexKey := "YOUR_PRIVATE_KEY"
 	privateKey, err := crypto.HexToECDSA(hexKey)
 	if err != nil {
 		t.Error(err)
