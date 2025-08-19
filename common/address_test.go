@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/hex"
+	"github.com/ethereum/go-ethereum/crypto"
 	"testing"
 )
 
@@ -21,4 +22,19 @@ func TestEncode(t *testing.T) {
 	encoded := EncodeAddress(b)
 	t.Log(encoded)
 	// TK3C8W8Ei6xk6EiRW4nMknPNoR7viQDC24
+}
+
+func TestAddress(t *testing.T) {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+
+	t.Logf("%x", privateKeyBytes)
+
+	publicKey := privateKey.PublicKey
+	address := PubkeyToAddress(publicKey)
+	t.Log(address)
 }

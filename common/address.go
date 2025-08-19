@@ -1,8 +1,10 @@
 package common
 
 import (
+	"crypto/ecdsa"
 	"crypto/sha256"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/mr-tron/base58"
 	"slices"
 )
@@ -60,4 +62,13 @@ func DecodeAddress(address string) (Address, error) {
 	} else {
 		return nil, fmt.Errorf("address check error")
 	}
+}
+
+func PubkeyToAddress(publicKey ecdsa.PublicKey) string {
+	address := crypto.PubkeyToAddress(publicKey)
+
+	addressTron := make([]byte, 0)
+	addressTron = append(addressTron, prefix)
+	addressTron = append(addressTron, address.Bytes()...)
+	return EncodeAddress(addressTron)
 }
