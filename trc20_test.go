@@ -2,12 +2,13 @@ package tron_connector
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github/wifiwang777/tron-connector/common"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"math/big"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/wifiwang777/tron-connector/common"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func TestBalanceOf(t *testing.T) {
@@ -77,19 +78,19 @@ func TestTransfer(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	signedTx, err := common.SignTx(tx, privateKey)
+	err = common.SignTx(tx.Transaction, privateKey)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	_, err = trc20.client.BroadcastTransaction(context.Background(), signedTx.Transaction)
+	_, err = trc20.client.BroadcastTransaction(context.Background(), tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Logf("Transaction ID: %x", signedTx.Txid)
+	t.Logf("Transaction ID: %x", tx.Txid)
 }
 
 func TestAllowance(t *testing.T) {

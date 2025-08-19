@@ -3,15 +3,16 @@ package common
 import (
 	"crypto/ecdsa"
 	"crypto/sha256"
+
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/wifiwang777/tron-protocol/protos/api"
+	"github.com/wifiwang777/tron-protocol/protos/core"
 	"google.golang.org/protobuf/proto"
 )
 
-func SignTx(tx *api.TransactionExtention, privateKey *ecdsa.PrivateKey) (*api.TransactionExtention, error) {
-	bytes, err := proto.Marshal(tx.Transaction.RawData)
+func SignTx(tx *core.Transaction, privateKey *ecdsa.PrivateKey) error {
+	bytes, err := proto.Marshal(tx.RawData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	h256h := sha256.New()
 	h256h.Write(bytes)
@@ -19,9 +20,9 @@ func SignTx(tx *api.TransactionExtention, privateKey *ecdsa.PrivateKey) (*api.Tr
 
 	sign, err := crypto.Sign(hash, privateKey)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	tx.Transaction.Signature = append(tx.Transaction.Signature, sign)
-	return tx, nil
+	tx.Signature = append(tx.Signature, sign)
+	return nil
 }

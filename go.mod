@@ -1,4 +1,4 @@
-module github/wifiwang777/tron-connector
+module github.com/wifiwang777/tron-connector
 
 go 1.24.4
 

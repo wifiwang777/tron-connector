@@ -3,11 +3,12 @@ package tron_connector
 import (
 	"context"
 	"fmt"
+	"math/big"
+
+	"github.com/wifiwang777/tron-connector/common"
 	"github.com/wifiwang777/tron-protocol/protos/api"
 	"github.com/wifiwang777/tron-protocol/protos/core/contract"
-	"github/wifiwang777/tron-connector/common"
 	"golang.org/x/crypto/sha3"
-	"math/big"
 )
 
 type Trc20 struct {

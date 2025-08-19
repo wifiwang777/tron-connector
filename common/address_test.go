@@ -2,8 +2,9 @@ package common
 
 import (
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/crypto"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func TestDecode(t *testing.T) {

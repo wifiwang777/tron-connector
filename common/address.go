@@ -4,9 +4,10 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"fmt"
+	"slices"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/mr-tron/base58"
-	"slices"
 )
 
 const (

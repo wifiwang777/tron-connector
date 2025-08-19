@@ -2,9 +2,10 @@ package tron_connector
 
 import (
 	"context"
+
+	"github.com/wifiwang777/tron-connector/common"
 	"github.com/wifiwang777/tron-protocol/protos/api"
 	"github.com/wifiwang777/tron-protocol/protos/core"
-	"github/wifiwang777/tron-connector/common"
 	"google.golang.org/grpc"
 )
 
