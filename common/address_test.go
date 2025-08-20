@@ -39,3 +39,10 @@ func TestAddress(t *testing.T) {
 	address := PubkeyToAddress(publicKey)
 	t.Log(address)
 }
+
+func TestPrivKeyToAddress(t *testing.T) {
+	privateKeyBytes, _ := hex.DecodeString("xxx")
+
+	address := PrivkeyToAddress(privateKeyBytes)
+	t.Log(address)
+}

@@ -73,3 +73,11 @@ func PubkeyToAddress(publicKey ecdsa.PublicKey) string {
 	addressTron = append(addressTron, address.Bytes()...)
 	return EncodeAddress(addressTron)
 }
+
+func PrivkeyToAddress(key []byte) string {
+	privateKey, err := crypto.ToECDSA(key)
+	if err != nil {
+		return ""
+	}
+	return PubkeyToAddress(privateKey.PublicKey)
+}
