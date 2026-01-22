@@ -8,21 +8,21 @@ import (
 )
 
 func TestDecode(t *testing.T) {
-	address := "TK3C8W8Ei6xk6EiRW4nMknPNoR7viQDC24"
+	address := "TBWa43fqDWBnjAkqPqM3SkP9Aoo5spMZgb"
 	decoded, err := DecodeAddress(address)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	t.Logf("%x", decoded)
-	// 41637a117ac5aff17dc83e46b34d6c73f54d59416d
+	// 4110e697f0d602ca3caadb50f571854f23872ff07f
 }
 
 func TestEncode(t *testing.T) {
-	b, _ := hex.DecodeString("41637a117ac5aff17dc83e46b34d6c73f54d59416d")
+	b, _ := hex.DecodeString("4110e697f0d602ca3caadb50f571854f23872ff07f")
 	encoded := EncodeAddress(b)
 	t.Log(encoded)
-	// TK3C8W8Ei6xk6EiRW4nMknPNoR7viQDC24
+	// TBWa43fqDWBnjAkqPqM3SkP9Aoo5spMZgb
 }
 
 func TestAddress(t *testing.T) {
@@ -36,13 +36,13 @@ func TestAddress(t *testing.T) {
 	t.Logf("%x", privateKeyBytes)
 
 	publicKey := privateKey.PublicKey
-	address := PubkeyToAddress(publicKey)
+	address := PublicKeyToAddress(publicKey)
 	t.Log(address)
 }
 
-func TestPrivKeyToAddress(t *testing.T) {
+func TestPrivateKeyToAddress(t *testing.T) {
 	privateKeyBytes, _ := hex.DecodeString("xxx")
 
-	address := PrivkeyToAddress(privateKeyBytes)
+	address := PrivateKeyToAddress(privateKeyBytes)
 	t.Log(address)
 }

@@ -17,6 +17,21 @@ const (
 
 type Address []byte
 
+func (a Address) String() string {
+	b := a[:]
+	s0 := sha256.New()
+	s0.Write(b)
+	b0 := s0.Sum(nil)
+
+	s1 := sha256.New()
+	s1.Write(b0)
+	b1 := s1.Sum(nil)
+
+	check := b
+	check = append(check, b1[:4]...)
+	return base58.Encode(check)
+}
+
 func EncodeAddress(b Address) string {
 	s0 := sha256.New()
 	s0.Write(b)
@@ -60,12 +75,12 @@ func DecodeAddress(address string) (Address, error) {
 
 	if slices.Equal(check, b1) {
 		return decodeData, nil
-	} else {
-		return nil, fmt.Errorf("address check error")
 	}
+
+	return nil, fmt.Errorf("address check error")
 }
 
-func PubkeyToAddress(publicKey ecdsa.PublicKey) string {
+func PublicKeyToAddress(publicKey ecdsa.PublicKey) string {
 	address := crypto.PubkeyToAddress(publicKey)
 
 	addressTron := make([]byte, 0)
@@ -74,10 +89,10 @@ func PubkeyToAddress(publicKey ecdsa.PublicKey) string {
 	return EncodeAddress(addressTron)
 }
 
-func PrivkeyToAddress(key []byte) string {
+func PrivateKeyToAddress(key []byte) string {
 	privateKey, err := crypto.ToECDSA(key)
 	if err != nil {
 		return ""
 	}
-	return PubkeyToAddress(privateKey.PublicKey)
+	return PublicKeyToAddress(privateKey.PublicKey)
 }
