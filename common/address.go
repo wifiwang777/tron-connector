@@ -32,21 +32,6 @@ func (a Address) String() string {
 	return base58.Encode(check)
 }
 
-func EncodeAddress(b Address) string {
-	s0 := sha256.New()
-	s0.Write(b)
-	b0 := s0.Sum(nil)
-
-	s1 := sha256.New()
-	s1.Write(b0)
-	b1 := s1.Sum(nil)
-
-	check := b
-	check = append(check, b1[:4]...)
-
-	return base58.Encode(check)
-}
-
 func DecodeAddress(address string) (Address, error) {
 	decode, err := base58.Decode(address)
 	if err != nil {
@@ -80,19 +65,19 @@ func DecodeAddress(address string) (Address, error) {
 	return nil, fmt.Errorf("address check error")
 }
 
-func PublicKeyToAddress(publicKey ecdsa.PublicKey) string {
+func PublicKeyToAddress(publicKey ecdsa.PublicKey) Address {
 	address := crypto.PubkeyToAddress(publicKey)
 
 	addressTron := make([]byte, 0)
 	addressTron = append(addressTron, prefix)
 	addressTron = append(addressTron, address.Bytes()...)
-	return EncodeAddress(addressTron)
+	return Address(addressTron)
 }
 
-func PrivateKeyToAddress(key []byte) string {
+func PrivateKeyToAddress(key []byte) Address {
 	privateKey, err := crypto.ToECDSA(key)
 	if err != nil {
-		return ""
+		return nil
 	}
 	return PublicKeyToAddress(privateKey.PublicKey)
 }

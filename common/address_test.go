@@ -14,14 +14,14 @@ func TestDecode(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	t.Logf("%x", decoded)
+	t.Logf("%x", []byte(decoded))
 	// 4110e697f0d602ca3caadb50f571854f23872ff07f
 }
 
 func TestEncode(t *testing.T) {
 	b, _ := hex.DecodeString("4110e697f0d602ca3caadb50f571854f23872ff07f")
-	encoded := EncodeAddress(b)
-	t.Log(encoded)
+	address := Address(b)
+	t.Log(address.String())
 	// TBWa43fqDWBnjAkqPqM3SkP9Aoo5spMZgb
 }
 
