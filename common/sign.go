@@ -9,10 +9,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func SignTx(tx *core.Transaction, privateKey *ecdsa.PrivateKey) error {
+func GenerateSignature(tx *core.Transaction, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	bytes, err := proto.Marshal(tx.RawData)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	h256h := sha256.New()
 	h256h.Write(bytes)
@@ -20,9 +20,8 @@ func SignTx(tx *core.Transaction, privateKey *ecdsa.PrivateKey) error {
 
 	sign, err := crypto.Sign(hash, privateKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	tx.Signature = append(tx.Signature, sign)
-	return nil
+	return sign, nil
 }

@@ -28,7 +28,7 @@ func NewClient(url string) (*Client, error) {
 	}, nil
 }
 
-// TRON
+// Base
 
 func (c *Client) GetAccount(address common.Address) (*core.Account, error) {
 	account := &core.Account{
@@ -46,6 +46,26 @@ func (c *Client) GetAccountResource(address common.Address) (*api.AccountResourc
 		Address: address,
 	}
 	return c.Conn.GetAccountResource(context.Background(), account)
+}
+
+func (c *Client) TransferTRX(from, to common.Address, amount *big.Int) (*api.TransactionExtention, error) {
+	amount = common.MultiplyBy10Power(amount, 6)
+
+	in := &contract.TransferContract{
+		OwnerAddress: from,
+		ToAddress:    to,
+		Amount:       amount.Int64(),
+	}
+	tx, err := c.Conn.CreateTransaction2(context.Background(), in)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
+}
+
+func (c *Client) BroadcastTransaction(tx *core.Transaction) error {
+	_, err := c.Conn.BroadcastTransaction(context.Background(), tx)
+	return err
 }
 
 // TRC20
@@ -77,7 +97,8 @@ func (c *Client) Trc20Balance(contractAddress, account common.Address) (*big.Int
 	return new(big.Int).SetBytes(result.ConstantResult[0]), nil
 }
 
-func (c *Client) Trc20Transfer(contractAddress, from, to common.Address, amount *big.Int) (*api.TransactionExtention, error) {
+func (c *Client) Trc20Transfer(contractAddress, from, to common.Address, amount *big.Int, decimal int) (*api.TransactionExtention, error) {
+	amount = common.MultiplyBy10Power(amount, decimal)
 	methodSignature := []byte("transfer(address,uint256)")
 	keccak256 := sha3.NewLegacyKeccak256()
 	keccak256.Write(methodSignature)

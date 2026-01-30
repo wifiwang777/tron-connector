@@ -61,6 +61,51 @@ func TestGetAccountResource(t *testing.T) {
 	t.Log("current energy:", currentEnergy)
 }
 
+func TestTransferTRX(t *testing.T) {
+	conn, err := grpc.NewClient(GrpcEndpointNile, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	client := &Client{
+		Conn: api.NewWalletClient(conn),
+	}
+	hexKey := "YOUR_PRIVATE_KEY"
+	toAddress := "YOUR_RECEIVER_ADDRESS"
+
+	privateKey, err := crypto.HexToECDSA(hexKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	from := common.PublicKeyToAddress(privateKey.PublicKey)
+	to, err := common.DecodeAddress(toAddress)
+	if err != nil {
+		t.Error(err)
+	}
+
+	amount := big.NewInt(100)
+	tx, err := client.TransferTRX(from, to, amount)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	signature, err := common.GenerateSignature(tx.Transaction, privateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	tx.Transaction.Signature = append(tx.Transaction.Signature, signature)
+	err = client.BroadcastTransaction(tx.Transaction)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	txId := tx.Txid
+	t.Logf("txId: %s", txId)
+}
+
 func TestGetEnergyPrice(t *testing.T) {
 	conn, err := grpc.NewClient(GrpcEndpointNile, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -161,21 +206,23 @@ func TestTrc20Transfer(t *testing.T) {
 		t.Error(err)
 	}
 
-	amount := new(big.Int).Mul(big.NewInt(100), big.NewInt(1000000))
+	amount := big.NewInt(100)
 
-	tx, err := client.Trc20Transfer(contractAddress, from, to, amount)
+	tx, err := client.Trc20Transfer(contractAddress, from, to, amount, 6)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = common.SignTx(tx.Transaction, privateKey)
+	signature, err := common.GenerateSignature(tx.Transaction, privateKey)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	_, err = client.Conn.BroadcastTransaction(context.Background(), tx.Transaction)
+	tx.Transaction.Signature = append(tx.Transaction.Signature, signature)
+
+	err = client.BroadcastTransaction(tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
