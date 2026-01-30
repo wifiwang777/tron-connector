@@ -70,8 +70,8 @@ func TestTransferTRX(t *testing.T) {
 	client := &Client{
 		Conn: api.NewWalletClient(conn),
 	}
-	hexKey := "YOUR_PRIVATE_KEY"
-	toAddress := "YOUR_RECEIVER_ADDRESS"
+	hexKey := "aa529957ebd9c2e79efdbaeb8bec1b8d0f2140eab660fa29fc0a454cb64c7511"
+	toAddress := "TK8DFcRXsECeeN9fsHkNHT6wmkjLrnaDwi"
 
 	privateKey, err := crypto.HexToECDSA(hexKey)
 	if err != nil {
@@ -103,7 +103,7 @@ func TestTransferTRX(t *testing.T) {
 		return
 	}
 	txId := tx.Txid
-	t.Logf("txId: %s", txId)
+	t.Logf("txId: %x", txId)
 }
 
 func TestGetEnergyPrice(t *testing.T) {
