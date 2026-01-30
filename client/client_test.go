@@ -59,6 +59,10 @@ func TestGetAccountResource(t *testing.T) {
 
 	currentEnergy := resource.EnergyLimit - resource.EnergyUsed
 	t.Log("current energy:", currentEnergy)
+
+	t.Log(resource.FreeNetLimit)
+	t.Log(resource.FreeNetUsed)
+	t.Log("current bandwidth: ", resource.FreeNetLimit-resource.FreeNetUsed)
 }
 
 func TestTransferTRX(t *testing.T) {
