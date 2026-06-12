@@ -161,7 +161,7 @@ func (c *Client) Transfer(from, to common.Address, amount decimal.Decimal) (*com
 	return common.NewTransaction(tx), nil
 }
 
-func (c *Client) DelegateResource(from, to common.Address, resource core.ResourceCode, balance int64) (*common.Transaction, error) {
+func (c *Client) DelegateResource(from, to common.Address, resource contract.ResourceCode, balance int64) (*common.Transaction, error) {
 	dr := &contract.DelegateResourceContract{
 		OwnerAddress:    from,
 		ReceiverAddress: to,
