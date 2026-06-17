@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/wifiwang777/tron-protocol/protos/api"
+	"github.com/wifiwang777/tron-connector/protos/api"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -10,9 +10,8 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/wifiwang777/tron-connector/common"
-	"github.com/wifiwang777/tron-protocol/protos/api"
-	"github.com/wifiwang777/tron-protocol/protos/core"
-	"github.com/wifiwang777/tron-protocol/protos/core/contract"
+	"github.com/wifiwang777/tron-connector/protos/api"
+	"github.com/wifiwang777/tron-connector/protos/core"
 	"golang.org/x/crypto/sha3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -149,7 +148,7 @@ func (c *Client) Transfer(from, to common.Address, amount decimal.Decimal) (*com
 
 	amount = amount.Shift(common.TronDecimals)
 
-	in := &contract.TransferContract{
+	in := &core.TransferContract{
 		OwnerAddress: from,
 		ToAddress:    to,
 		Amount:       amount.IntPart(),
@@ -161,8 +160,8 @@ func (c *Client) Transfer(from, to common.Address, amount decimal.Decimal) (*com
 	return common.NewTransaction(tx), nil
 }
 
-func (c *Client) DelegateResource(from, to common.Address, resource contract.ResourceCode, balance int64) (*common.Transaction, error) {
-	dr := &contract.DelegateResourceContract{
+func (c *Client) DelegateResource(from, to common.Address, resource core.ResourceCode, balance int64) (*common.Transaction, error) {
+	dr := &core.DelegateResourceContract{
 		OwnerAddress:    from,
 		ReceiverAddress: to,
 		Resource:        resource,
@@ -217,7 +216,7 @@ func (c *Client) GetCurrentEnergyPrice() (int64, error) {
 
 // Contract
 
-func (c *Client) GetEnergyCost(tsc *contract.TriggerSmartContract) (int64, error) {
+func (c *Client) GetEnergyCost(tsc *core.TriggerSmartContract) (int64, error) {
 	result, err := c.Conn.TriggerConstantContract(context.Background(), tsc)
 	if err != nil {
 		return 0, err
@@ -231,7 +230,7 @@ func (c *Client) GetEnergyCost(tsc *contract.TriggerSmartContract) (int64, error
 	return result.EnergyUsed, nil
 }
 
-func (c *Client) BuildContractTransaction(tsc *contract.TriggerSmartContract, feeLimit int64) (*common.Transaction, error) {
+func (c *Client) BuildContractTransaction(tsc *core.TriggerSmartContract, feeLimit int64) (*common.Transaction, error) {
 	tx, err := c.Conn.TriggerContract(context.Background(), tsc)
 	if err != nil {
 		return nil, err
@@ -261,7 +260,7 @@ func (c *Client) GetTrc20Balance(account, contractAddress common.Address, decima
 	data = append(data, methodId...)
 	data = append(data, common.LeftPadBytes(account, 32)...)
 
-	tsc := &contract.TriggerSmartContract{
+	tsc := &core.TriggerSmartContract{
 		OwnerAddress:    account,
 		ContractAddress: contractAddress,
 		Data:            data,
@@ -294,7 +293,7 @@ func (c *Client) GetTrc20Allowance(contractAddress, owner, spender common.Addres
 	data = append(data, paddedOwner...)
 	data = append(data, paddedSpender...)
 
-	ct := &contract.TriggerSmartContract{
+	ct := &core.TriggerSmartContract{
 		OwnerAddress:    owner,
 		ContractAddress: contractAddress,
 		Data:            data,
@@ -311,7 +310,7 @@ func (c *Client) GetTrc20Allowance(contractAddress, owner, spender common.Addres
 	return new(big.Int).SetBytes(result.ConstantResult[0]), nil
 }
 
-func (c *Client) GenerateTrc20TransferTrigger(contractAddress, from, to common.Address, amount decimal.Decimal, decimals int32) (*contract.TriggerSmartContract, error) {
+func (c *Client) GenerateTrc20TransferTrigger(contractAddress, from, to common.Address, amount decimal.Decimal, decimals int32) (*core.TriggerSmartContract, error) {
 	var err error
 	if amount.Sign() < 1 {
 		err = fmt.Errorf("amount must be positive")
@@ -335,7 +334,7 @@ func (c *Client) GenerateTrc20TransferTrigger(contractAddress, from, to common.A
 	data = append(data, methodId...)
 	data = append(data, common.LeftPadBytes(to, 32)...)
 	data = append(data, common.LeftPadBytes(amount.BigInt().Bytes(), 32)...)
-	tsc := &contract.TriggerSmartContract{
+	tsc := &core.TriggerSmartContract{
 		OwnerAddress:    from,
 		ContractAddress: contractAddress,
 		Data:            data,
@@ -351,7 +350,7 @@ func (c *Client) Trc20Transfer(contractAddress, from, to common.Address, amount 
 	return c.BuildContractTransaction(tsc, feeLimit)
 }
 
-func (c *Client) GenerateTrc20ApproveTrigger(contractAddress, from, spender common.Address, amount decimal.Decimal, decimals int32) (*contract.TriggerSmartContract, error) {
+func (c *Client) GenerateTrc20ApproveTrigger(contractAddress, from, spender common.Address, amount decimal.Decimal, decimals int32) (*core.TriggerSmartContract, error) {
 	var err error
 	if amount.Sign() < 1 {
 		err = fmt.Errorf("amount must be positive")
@@ -373,7 +372,7 @@ func (c *Client) GenerateTrc20ApproveTrigger(contractAddress, from, spender comm
 	data = append(data, methodId...)
 	data = append(data, common.LeftPadBytes(spender, 32)...)
 	data = append(data, common.LeftPadBytes(amount.BigInt().Bytes(), 32)...)
-	tsc := &contract.TriggerSmartContract{
+	tsc := &core.TriggerSmartContract{
 		OwnerAddress:    from,
 		ContractAddress: contractAddress,
 		Data:            data,
@@ -389,7 +388,7 @@ func (c *Client) Trc20Approve(contractAddress, from, to common.Address, amount d
 	return c.BuildContractTransaction(tsc, feeLimit)
 }
 
-func (c *Client) GenerateTrc20TransferFromTrigger(contractAddress, spender, sender, receiver common.Address, amount decimal.Decimal, decimals int32) (*contract.TriggerSmartContract, error) {
+func (c *Client) GenerateTrc20TransferFromTrigger(contractAddress, spender, sender, receiver common.Address, amount decimal.Decimal, decimals int32) (*core.TriggerSmartContract, error) {
 	var err error
 	if amount.Sign() < 1 {
 		err = fmt.Errorf("amount must be positive")
@@ -412,7 +411,7 @@ func (c *Client) GenerateTrc20TransferFromTrigger(contractAddress, spender, send
 	data = append(data, common.LeftPadBytes(sender, 32)...)
 	data = append(data, common.LeftPadBytes(receiver, 32)...)
 	data = append(data, common.LeftPadBytes(amount.BigInt().Bytes(), 32)...)
-	tsc := &contract.TriggerSmartContract{
+	tsc := &core.TriggerSmartContract{
 		OwnerAddress:    spender,
 		ContractAddress: contractAddress,
 		Data:            data,

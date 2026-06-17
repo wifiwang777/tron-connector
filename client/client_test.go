@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/shopspring/decimal"
 	"github.com/wifiwang777/tron-connector/common"
-	"github.com/wifiwang777/tron-protocol/protos/api"
+	"github.com/wifiwang777/tron-connector/protos/api"
 )
 
 const (
