@@ -43,6 +43,20 @@ func getClient() (*Client, error) {
 	)
 }
 
+func TestGetNodeInfo(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	nodeInfo, err := client.Conn.GetNodeInfo(context.Background(), new(api.EmptyMessage))
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	t.Logf("nodeInfo: %v", nodeInfo)
+}
+
 func TestGetAccount(t *testing.T) {
 	client, err := getClient()
 	if err != nil {
