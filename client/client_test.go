@@ -152,6 +152,20 @@ func TestGetCurrentEnergyPrice(t *testing.T) {
 	t.Log(res)
 }
 
+func TestGetCurrentBandwidthPrice(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	res, err := client.GetCurrentBandwidthPrice()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(res)
+}
+
 func TestGetContractInfo(t *testing.T) {
 	client, err := getClient()
 	if err != nil {

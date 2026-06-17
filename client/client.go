@@ -53,30 +53,23 @@ func WithCustomDialOptions(opts ...grpc.DialOption) Option {
 	}
 }
 
-// NewClient 开源库对外暴露的唯一构造函数
 func NewClient(endpoint string, setter ...Option) (*Client, error) {
-	// 1. 初始化默认参数（不走 SSL，不带 API Key）
 	opts := &options{
 		useSSL: false,
 	}
 
-	// 2. 执行用户传入的选项，修改默认参数
 	for _, set := range setter {
 		set(opts)
 	}
 
-	// 3. 构建真正的 gRPC DialOptions 数组
 	var grpcOpts []grpc.DialOption
 
-	// 4. 处理安全凭证逻辑
 	if opts.useSSL {
-		// 如果用户传了具体的 certPool 就用，没传（nil）就默认用系统根证书
 		grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(opts.certPool, "")))
 	} else {
 		grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	// 5. 处理内置的 API Key 拦截器
 	if opts.apiKey != "" && opts.apiHeader != "" {
 		grpcOpts = append(grpcOpts, grpc.WithChainUnaryInterceptor(UnaryAPIKeyInterceptor(opts.apiHeader, opts.apiKey)))
 	}
@@ -85,7 +78,6 @@ func NewClient(endpoint string, setter ...Option) (*Client, error) {
 		grpcOpts = append(grpcOpts, opts.customDialOpts...)
 	}
 
-	// 7. 建立连接（2026年推荐使用 grpc.NewClient 代替已废弃的 grpc.Dial）
 	conn, err := grpc.NewClient(endpoint, grpcOpts...)
 	if err != nil {
 		return nil, err
@@ -105,11 +97,7 @@ func UnaryAPIKeyInterceptor(apiHeader, apiKey string) grpc.UnaryClientIntercepto
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		// 1. 将 API Key 注入到外发的 metadata 中
-		// gRPC 内部会自动将 "TRON-PRO-API-KEY" 转换为标准的 header 格式
 		ctx = metadata.AppendToOutgoingContext(ctx, apiHeader, apiKey)
-
-		// 2. 将带有 API Key 的 context 传给下一个处理器或实际的调用发起者
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}
 }
@@ -186,7 +174,6 @@ func (c *Client) GetCurrentEnergyPrice() (int64, error) {
 		return 0, err
 	}
 
-	// 0:100,1572597600000:10,1606282800000:40,1612768800000:140,1612769400000:140,1612778400000:140,1628674200000:420,1635143400000:280,1669603800000:420,1726283400000:210,1754644200000:100
 	if result.Prices == "" {
 		err = fmt.Errorf("empty energy price result, check network connection")
 		return 0, err
@@ -205,10 +192,40 @@ func (c *Client) GetCurrentEnergyPrice() (int64, error) {
 		return 0, err
 	}
 
-	// 3. 将价格转换为 int64
 	price, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse energy price: %w", err)
+	}
+
+	return price, nil
+}
+
+func (c *Client) GetCurrentBandwidthPrice() (int64, error) {
+	result, err := c.Conn.GetBandwidthPrices(context.Background(), &api.EmptyMessage{})
+	if err != nil {
+		return 0, err
+	}
+	if result.Prices == "" {
+		err = fmt.Errorf("empty bandwidth price result, check network connection")
+		return 0, err
+	}
+
+	pairs := strings.Split(result.Prices, ",")
+	if len(pairs) == 0 {
+		err = fmt.Errorf("invalid bandwidth price format: %s", result.Prices)
+		return 0, err
+	}
+
+	lastPair := pairs[len(pairs)-1]
+	parts := strings.Split(lastPair, ":")
+	if len(parts) != 2 {
+		err = fmt.Errorf("invalid bandwidth price result: %s", result.Prices)
+		return 0, err
+	}
+
+	price, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse bandwidth price: %w", err)
 	}
 
 	return price, nil
