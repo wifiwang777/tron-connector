@@ -10,3 +10,13 @@ func LeftPadBytes(slice []byte, l int) []byte {
 
 	return padded
 }
+
+func TrimLeftZeroes(s []byte) []byte {
+	idx := 0
+	for ; idx < len(s); idx++ {
+		if s[idx] != 0 {
+			break
+		}
+	}
+	return s[idx:]
+}
