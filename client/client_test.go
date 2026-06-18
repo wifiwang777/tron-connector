@@ -64,7 +64,7 @@ func TestGetAccount(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-	address, _ := common.DecodeAddress("TF9J64qtrNfSChQ217zcmd8HPMsHbUhK6Y")
+	address, _ := common.DecodeAddress(MainAddress)
 	account, err := client.GetAccount(address)
 	if err != nil {
 		t.Error(err)
@@ -79,7 +79,7 @@ func TestGetAccountResource(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-	address, _ := common.DecodeAddress("TF9J64qtrNfSChQ217zcmd8HPMsHbUhK6Y")
+	address, _ := common.DecodeAddress(MainAddress)
 
 	resource, err := client.GetAccountResource(address)
 	if err != nil {
@@ -104,7 +104,7 @@ func TestCreateAccount(t *testing.T) {
 		return
 	}
 
-	ownerAddress, err := common.DecodeAddress("TF9J64qtrNfSChQ217zcmd8HPMsHbUhK6Y")
+	ownerAddress, err := common.DecodeAddress(MainAddress)
 	if err != nil {
 		t.Error(err)
 		return
@@ -347,7 +347,7 @@ func TestGetTrc20Balance(t *testing.T) {
 		return
 	}
 
-	account, err := common.DecodeAddress("TF9J64qtrNfSChQ217zcmd8HPMsHbUhK6Y")
+	account, err := common.DecodeAddress(MainAddress)
 	if err != nil {
 		t.Error(err)
 		return

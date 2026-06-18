@@ -17,7 +17,7 @@ func NewTransaction(tx *api.TransactionExtention) (*Transaction, error) {
 	if tx.Result == nil {
 		return nil, fmt.Errorf("tx result is nil")
 	}
-	if tx.Result.Code != 0 {
+	if tx.Result.Code != api.Return_SUCCESS {
 		return nil, fmt.Errorf("tx failed with code %s, message: %s", tx.Result.Code.String(), tx.Result.Message)
 	}
 	return &Transaction{TransactionExtention: tx}, nil
