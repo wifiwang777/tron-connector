@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/wifiwang777/tron-connector/common"
 	"github.com/wifiwang777/tron-connector/protos/api"
+	"github.com/wifiwang777/tron-connector/protos/core"
 )
 
 const (
@@ -94,6 +95,137 @@ func TestGetAccountResource(t *testing.T) {
 	t.Log("FreeNetLimit", resource.FreeNetLimit)
 	t.Log("FreeNetUsed", resource.FreeNetUsed)
 	t.Log("current bandwidth: ", resource.FreeNetLimit-resource.FreeNetUsed)
+}
+
+func TestCreateAccount(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	ownerAddress, err := common.DecodeAddress(MainAddress)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	accountAddress, err := common.DecodeAddress("THFvKmA3jRDb6xpKbup37d7tESQ3zjQFBU")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tx, err := client.CreateAccount(ownerAddress, accountAddress, core.AccountType_Normal)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = tx.SignWithPrivateKey(privateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = client.BroadcastTransaction(tx.Transaction)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	txId := tx.Txid
+	t.Logf("txId: %x", txId)
+}
+
+func TestDelegateResource(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	from, err := common.DecodeAddress(MainAddress)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	to, err := common.DecodeAddress("THFvKmA3jRDb6xpKbup37d7tESQ3zjQFBU")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tx, err := client.DelegateResource(from, to, core.ResourceCode_ENERGY, 100000000, false, 0)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = tx.SignWithPrivateKey(privateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = client.BroadcastTransaction(tx.Transaction)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	txId := tx.Txid
+	t.Logf("txId: %x", txId)
+}
+
+func TestUnDelegateResource(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	from, err := common.DecodeAddress(MainAddress)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	to, err := common.DecodeAddress("THFvKmA3jRDb6xpKbup37d7tESQ3zjQFBU")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tx, err := client.UnDelegateResource(from, to, core.ResourceCode_ENERGY, 100000000)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = tx.SignWithPrivateKey(privateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = client.BroadcastTransaction(tx.Transaction)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	txId := tx.Txid
+	t.Logf("txId: %x", txId)
 }
 
 func TestTransferTRX(t *testing.T) {
@@ -185,6 +317,20 @@ func TestGetContractInfo(t *testing.T) {
 	t.Log(common.Address(res.SmartContract.OriginAddress).String())
 	t.Log(res.SmartContract.OriginEnergyLimit)
 	t.Log(res.ContractState)
+}
+
+func TestGetChainParameters(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	chainParameters, err := client.GetChainParameterMap()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Logf("chain parameters: %+v", chainParameters)
 }
 
 func TestGetTrc20Balance(t *testing.T) {

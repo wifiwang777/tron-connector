@@ -122,6 +122,20 @@ func (c *Client) GetAccountResource(address common.Address) (*api.AccountResourc
 	return c.Conn.GetAccountResource(context.Background(), account)
 }
 
+func (c *Client) CreateAccount(ownerAddress, accountAddress common.Address, accountType core.AccountType) (*common.Transaction, error) {
+	in := &core.AccountCreateContract{
+		OwnerAddress:   ownerAddress,
+		AccountAddress: accountAddress,
+		Type:           accountType,
+	}
+
+	tx, err := c.Conn.CreateAccount2(context.Background(), in)
+	if err != nil {
+		return nil, err
+	}
+	return common.NewTransaction(tx)
+}
+
 func (c *Client) Transfer(from, to common.Address, amount decimal.Decimal) (*common.Transaction, error) {
 	var err error
 	if amount.Sign() < 1 {
@@ -145,27 +159,54 @@ func (c *Client) Transfer(from, to common.Address, amount decimal.Decimal) (*com
 	if err != nil {
 		return nil, err
 	}
-	return common.NewTransaction(tx), nil
+	return common.NewTransaction(tx)
 }
 
-func (c *Client) DelegateResource(from, to common.Address, resource core.ResourceCode, balance int64) (*common.Transaction, error) {
-	dr := &core.DelegateResourceContract{
+func (c *Client) DelegateResource(from, to common.Address, resource core.ResourceCode, balance int64, lock bool, lockPeriod int64) (*common.Transaction, error) {
+	in := &core.DelegateResourceContract{
 		OwnerAddress:    from,
-		ReceiverAddress: to,
 		Resource:        resource,
 		Balance:         balance,
+		ReceiverAddress: to,
+		Lock:            lock,
+		LockPeriod:      lockPeriod,
 	}
 
-	tx, err := c.Conn.DelegateResource(context.Background(), dr)
+	tx, err := c.Conn.DelegateResource(context.Background(), in)
 	if err != nil {
 		return nil, err
 	}
-	return common.NewTransaction(tx), nil
+
+	return common.NewTransaction(tx)
+}
+
+func (c *Client) UnDelegateResource(from, to common.Address, resource core.ResourceCode, balance int64) (*common.Transaction, error) {
+	in := &core.UnDelegateResourceContract{
+		OwnerAddress:    from,
+		Resource:        resource,
+		Balance:         balance,
+		ReceiverAddress: to,
+	}
+
+	tx, err := c.Conn.UnDelegateResource(context.Background(), in)
+	if err != nil {
+		return nil, err
+	}
+	return common.NewTransaction(tx)
 }
 
 func (c *Client) BroadcastTransaction(tx *core.Transaction) error {
-	_, err := c.Conn.BroadcastTransaction(context.Background(), tx)
-	return err
+	result, err := c.Conn.BroadcastTransaction(context.Background(), tx)
+	if err != nil {
+		return err
+	}
+	if !result.Result {
+		return fmt.Errorf("result error: %s", result.GetMessage())
+	}
+	if result.Code != api.Return_SUCCESS {
+		return fmt.Errorf("result error(%s): %s", result.GetCode(), result.GetMessage())
+	}
+	return nil
 }
 
 func (c *Client) GetCurrentEnergyPrice() (int64, error) {
@@ -231,6 +272,19 @@ func (c *Client) GetCurrentBandwidthPrice() (int64, error) {
 	return price, nil
 }
 
+func (c *Client) GetChainParameterMap() (map[string]int64, error) {
+	chainParameters, err := c.Conn.GetChainParameters(context.Background(), &api.EmptyMessage{})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]int64)
+	for _, chainParameter := range chainParameters.ChainParameter {
+		result[chainParameter.Key] = chainParameter.Value
+	}
+	return result, nil
+}
+
 // Contract
 
 func (c *Client) GetEnergyCost(tsc *core.TriggerSmartContract) (int64, error) {
@@ -253,17 +307,20 @@ func (c *Client) BuildContractTransaction(tsc *core.TriggerSmartContract, feeLim
 		return nil, err
 	}
 
-	res := common.NewTransaction(tx)
+	newTx, err := common.NewTransaction(tx)
+	if err != nil {
+		return nil, err
+	}
 
 	if feeLimit > 0 {
-		res.Transaction.RawData.FeeLimit = feeLimit
-		res.Txid, err = res.CalculateDigestHash()
+		newTx.Transaction.RawData.FeeLimit = feeLimit
+		newTx.Txid, err = newTx.CalculateDigestHash()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return common.NewTransaction(tx), nil
+	return newTx, nil
 }
 
 // TRC20

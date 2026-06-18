@@ -3,14 +3,24 @@ package common
 import (
 	"crypto/ecdsa"
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/wifiwang777/tron-connector/protos/api"
 	"google.golang.org/protobuf/proto"
 )
 
-func NewTransaction(tx *api.TransactionExtention) *Transaction {
-	return &Transaction{TransactionExtention: tx}
+func NewTransaction(tx *api.TransactionExtention) (*Transaction, error) {
+	if tx == nil {
+		return nil, fmt.Errorf("tx is nil")
+	}
+	if tx.Result == nil {
+		return nil, fmt.Errorf("tx result is nil")
+	}
+	if tx.Result.Code != 0 {
+		return nil, fmt.Errorf("tx failed with code %s, message: %s", tx.Result.Code.String(), tx.Result.Message)
+	}
+	return &Transaction{TransactionExtention: tx}, nil
 }
 
 type Transaction struct {
