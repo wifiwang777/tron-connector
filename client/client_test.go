@@ -104,7 +104,7 @@ func TestCreateAccount(t *testing.T) {
 		return
 	}
 
-	ownerAddress, err := common.DecodeAddress(MainAddress)
+	ownerAddress, err := common.DecodeAddress("TF9J64qtrNfSChQ217zcmd8HPMsHbUhK6Y")
 	if err != nil {
 		t.Error(err)
 		return
@@ -115,13 +115,13 @@ func TestCreateAccount(t *testing.T) {
 		return
 	}
 
-	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	tx, err := client.CreateAccount(ownerAddress, accountAddress, core.AccountType_Normal)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	tx, err := client.CreateAccount(ownerAddress, accountAddress, core.AccountType_Normal)
+	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
 	if err != nil {
 		t.Error(err)
 		return
@@ -158,13 +158,13 @@ func TestDelegateResource(t *testing.T) {
 		return
 	}
 
-	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	tx, err := client.DelegateResource(from, to, core.ResourceCode_ENERGY, 100000000, false, 0)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	tx, err := client.DelegateResource(from, to, core.ResourceCode_ENERGY, 100000000, false, 0)
+	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
 	if err != nil {
 		t.Error(err)
 		return
@@ -202,18 +202,17 @@ func TestUnDelegateResource(t *testing.T) {
 		return
 	}
 
-	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
 	tx, err := client.UnDelegateResource(from, to, core.ResourceCode_ENERGY, 100000000)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
+	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	err = tx.SignWithPrivateKey(privateKey)
 	if err != nil {
 		t.Error(err)
@@ -237,13 +236,10 @@ func TestTransferTRX(t *testing.T) {
 	hexKey := MainPrivateKey
 	toAddress := SlaveAddress
 
-	privateKey, err := crypto.HexToECDSA(hexKey)
+	from, err := common.DecodeAddress(MainAddress)
 	if err != nil {
 		t.Error(err)
-		return
 	}
-
-	from := common.PublicKeyToAddress(privateKey.PublicKey)
 	to, err := common.DecodeAddress(toAddress)
 	if err != nil {
 		t.Error(err)
@@ -252,6 +248,12 @@ func TestTransferTRX(t *testing.T) {
 	amountStr := "100.10000000"
 	amount, _ := decimal.NewFromString(amountStr)
 	tx, err := client.Transfer(from, to, amount)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	privateKey, err := crypto.HexToECDSA(hexKey)
 	if err != nil {
 		t.Error(err)
 		return
@@ -418,13 +420,11 @@ func TestTrc20Transfer(t *testing.T) {
 	hexKey := MainPrivateKey
 	toAddress := ReceiverAddress
 
-	privateKey, err := crypto.HexToECDSA(hexKey)
+	from, err := common.DecodeAddress(MainAddress)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-
-	from := common.PublicKeyToAddress(privateKey.PublicKey)
 	to, err := common.DecodeAddress(toAddress)
 	if err != nil {
 		t.Error(err)
@@ -440,6 +440,11 @@ func TestTrc20Transfer(t *testing.T) {
 		return
 	}
 
+	privateKey, err := crypto.HexToECDSA(hexKey)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	err = tx.SignWithPrivateKey(privateKey)
 	if err != nil {
 		t.Error(err)
@@ -500,6 +505,7 @@ func TestTrc20Approve(t *testing.T) {
 		return
 	}
 
+	hexKey := SlavePrivateKey
 	contractAddress, err := common.DecodeAddress(TokenAddress)
 	if err != nil {
 		t.Error(err)
@@ -529,7 +535,7 @@ func TestTrc20Approve(t *testing.T) {
 		return
 	}
 
-	privateKey, err := crypto.HexToECDSA(SlavePrivateKey)
+	privateKey, err := crypto.HexToECDSA(hexKey)
 	if err != nil {
 		t.Error(err)
 		return
@@ -605,6 +611,7 @@ func TestTrc20TransferFrom(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	hexKey := MainPrivateKey
 
 	spender, err := common.DecodeAddress(MainAddress)
 	if err != nil {
@@ -637,7 +644,7 @@ func TestTrc20TransferFrom(t *testing.T) {
 		return
 	}
 
-	privateKey, err := crypto.HexToECDSA(MainPrivateKey)
+	privateKey, err := crypto.HexToECDSA(hexKey)
 	if err != nil {
 		t.Error(err)
 		return
