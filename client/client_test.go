@@ -361,6 +361,38 @@ func TestGetTrc20Balance(t *testing.T) {
 	t.Logf("Balance: %s", balance)
 }
 
+func TestGetTrc20Allowance(t *testing.T) {
+	client, err := getClient()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	contractAddress, err := common.DecodeAddress(TokenAddress)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	ownerAddress, err := common.DecodeAddress(SlaveAddress)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	spenderAddress, err := common.DecodeAddress(MainAddress)
+	if err != nil {
+		t.Error(err)
+	}
+
+	allowance, err := client.GetTrc20Allowance(contractAddress, ownerAddress, spenderAddress)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Logf("Allowance: %s", allowance)
+}
+
 func TestGetTrc20TransferEnergyCost(t *testing.T) {
 	client, err := getClient()
 	if err != nil {
@@ -524,12 +556,7 @@ func TestTrc20Approve(t *testing.T) {
 		return
 	}
 
-	tsc, err := client.GenerateTrc20ApproveTrigger(contractAddress, from, spender, common.UnlimitedApproveAmount, int32(TokenDecimals))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	tx, err := client.BuildContractTransaction(tsc, Trc20ApproveFeeLimit)
+	tx, err := client.Trc20Approve(contractAddress, from, spender, common.UnlimitedApproveAmount, int32(0), Trc20ApproveFeeLimit)
 	if err != nil {
 		t.Error(err)
 		return
@@ -633,12 +660,7 @@ func TestTrc20TransferFrom(t *testing.T) {
 
 	amount, _ := decimal.NewFromString("100")
 
-	tsc, err := client.GenerateTrc20TransferFromTrigger(contractAddress, spender, sender, receiver, amount, int32(TokenDecimals))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	tx, err := client.BuildContractTransaction(tsc, Trc20TransferFromFeeLimit)
+	tx, err := client.Trc20TransferFrom(contractAddress, spender, sender, receiver, amount, int32(TokenDecimals), Trc20TransferFromFeeLimit)
 	if err != nil {
 		t.Error(err)
 		return

@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/shopspring/decimal"
 	"github.com/wifiwang777/tron-connector/common"
 	"github.com/wifiwang777/tron-connector/protos/api"
 	"github.com/wifiwang777/tron-connector/protos/core"
-	"golang.org/x/crypto/sha3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -334,9 +334,8 @@ func (c *Client) BuildContractTransaction(tsc *core.TriggerSmartContract, feeLim
 // TRC20
 
 func (c *Client) GetTrc20Balance(account, contractAddress common.Address, decimals int32) (decimal.Decimal, error) {
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write([]byte("balanceOf(address)"))
-	methodId := hasher.Sum(nil)[:4]
+	methodSignature := []byte("balanceOf(address)")
+	methodId := crypto.Keccak256(methodSignature)[:4]
 
 	data := make([]byte, 0, 36)
 	data = append(data, methodId...)
@@ -363,10 +362,8 @@ func (c *Client) GetTrc20Balance(account, contractAddress common.Address, decima
 }
 
 func (c *Client) GetTrc20Allowance(contractAddress, owner, spender common.Address) (*big.Int, error) {
-	transferFnSignature := []byte("allowance(address,address)")
-	erc20hash := sha3.NewLegacyKeccak256()
-	erc20hash.Write(transferFnSignature)
-	methodId := erc20hash.Sum(nil)[:4]
+	methodSignature := []byte("allowance(address,address)")
+	methodId := crypto.Keccak256(methodSignature)[:4]
 
 	paddedOwner := common.LeftPadBytes(owner, 32)
 	paddedSpender := common.LeftPadBytes(spender, 32)
@@ -393,6 +390,9 @@ func (c *Client) GetTrc20Allowance(contractAddress, owner, spender common.Addres
 }
 
 func (c *Client) GenerateTrc20TransferTrigger(contractAddress, from, to common.Address, amount decimal.Decimal, decimals int32) (*core.TriggerSmartContract, error) {
+	methodSignature := []byte("transfer(address,uint256)")
+	methodId := crypto.Keccak256(methodSignature)[:4]
+
 	var err error
 	if amount.Sign() < 1 {
 		err = fmt.Errorf("amount must be positive")
@@ -406,11 +406,6 @@ func (c *Client) GenerateTrc20TransferTrigger(contractAddress, from, to common.A
 	}
 
 	amount = amount.Shift(decimals)
-
-	methodSignature := []byte("transfer(address,uint256)")
-	keccak256 := sha3.NewLegacyKeccak256()
-	keccak256.Write(methodSignature)
-	methodId := keccak256.Sum(nil)[:4]
 
 	var data []byte
 	data = append(data, methodId...)
@@ -433,6 +428,9 @@ func (c *Client) Trc20Transfer(contractAddress, from, to common.Address, amount 
 }
 
 func (c *Client) GenerateTrc20ApproveTrigger(contractAddress, from, spender common.Address, amount decimal.Decimal, decimals int32) (*core.TriggerSmartContract, error) {
+	methodSignature := []byte("approve(address,uint256)")
+	methodId := crypto.Keccak256(methodSignature)[:4]
+
 	var err error
 	if amount.Sign() < 1 {
 		err = fmt.Errorf("amount must be positive")
@@ -445,10 +443,6 @@ func (c *Client) GenerateTrc20ApproveTrigger(contractAddress, from, spender comm
 	}
 
 	amount = amount.Shift(decimals)
-	methodSignature := []byte("approve(address,uint256)")
-	keccak256 := sha3.NewLegacyKeccak256()
-	keccak256.Write(methodSignature)
-	methodId := keccak256.Sum(nil)[:4]
 
 	var data []byte
 	data = append(data, methodId...)
@@ -471,6 +465,9 @@ func (c *Client) Trc20Approve(contractAddress, from, to common.Address, amount d
 }
 
 func (c *Client) GenerateTrc20TransferFromTrigger(contractAddress, spender, sender, receiver common.Address, amount decimal.Decimal, decimals int32) (*core.TriggerSmartContract, error) {
+	methodSignature := []byte("transferFrom(address,address,uint256)")
+	methodId := crypto.Keccak256(methodSignature)[:4]
+
 	var err error
 	if amount.Sign() < 1 {
 		err = fmt.Errorf("amount must be positive")
@@ -483,10 +480,6 @@ func (c *Client) GenerateTrc20TransferFromTrigger(contractAddress, spender, send
 	}
 
 	amount = amount.Shift(decimals)
-	methodSignature := []byte("transferFrom(address,address,uint256)")
-	keccak256 := sha3.NewLegacyKeccak256()
-	keccak256.Write(methodSignature)
-	methodId := keccak256.Sum(nil)[:4]
 
 	var data []byte
 	data = append(data, methodId...)
