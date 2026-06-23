@@ -195,6 +195,14 @@ func (c *Client) UnDelegateResource(from, to common.Address, resource core.Resou
 	return common.NewTransaction(tx)
 }
 
+func (c *Client) GetDelegatedResource(from, to common.Address) (*api.DelegatedResourceList, error) {
+	in := &api.DelegatedResourceMessage{
+		FromAddress: from,
+		ToAddress:   to,
+	}
+	return c.Conn.GetDelegatedResourceV2(context.Background(), in)
+}
+
 func (c *Client) BroadcastTransaction(tx *core.Transaction) error {
 	result, err := c.Conn.BroadcastTransaction(context.Background(), tx)
 	if err != nil {
