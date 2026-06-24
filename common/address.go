@@ -12,18 +12,22 @@ import (
 type Address []byte
 
 func (a Address) String() string {
-	if len(a) == 0 {
-		return ""
+	addr := make([]byte, addressLength)
+	if len(a) == addressLength-1 {
+		addr[0] = prefix
+		copy(addr[1:], a)
+	} else {
+		copy(addr, a)
 	}
 
 	// 1. 连续两次 SHA256 计算校验和
-	h1 := sha256.Sum256(a)
+	h1 := sha256.Sum256(addr)
 	h2 := sha256.Sum256(h1[:])
 
 	// 2. 优雅拼接：预先分配好 25 字节空间，绝对不污染原切片 a，且只有一次内存分配
-	check := make([]byte, len(a)+checksumLength)
-	copy(check, a)
-	copy(check[len(a):], h2[:checksumLength])
+	check := make([]byte, len(addr)+checksumLength)
+	copy(check, addr)
+	copy(check[len(addr):], h2[:checksumLength])
 
 	// 3. Base58 编码
 	return base58.Encode(check)
@@ -36,7 +40,7 @@ func DecodeAddress(address string) (Address, error) {
 	}
 
 	// 长度校验
-	if len(decode) != addressLength {
+	if len(decode) != addressLength+checksumLength {
 		return nil, fmt.Errorf("invalid address length")
 	}
 
@@ -69,7 +73,7 @@ func DecodeAddress(address string) (Address, error) {
 func PublicKeyToAddress(publicKey ecdsa.PublicKey) Address {
 	address := crypto.PubkeyToAddress(publicKey)
 
-	addressTron := make([]byte, 1+len(address.Bytes()))
+	addressTron := make([]byte, addressLength)
 	addressTron[0] = prefix
 	copy(addressTron[1:], address.Bytes())
 

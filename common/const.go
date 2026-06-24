@@ -3,7 +3,7 @@ package common
 import "github.com/shopspring/decimal"
 
 const (
-	addressLength  = 25
+	addressLength  = 21
 	prefix         = 0x41
 	checksumLength = 4
 
