@@ -13,9 +13,7 @@ const (
 	GrpcEndpointNile           = "grpc.nile.trongrid.io:50051"
 	CollectContractAddressNile = "TLDFVwxT76cciuQqDkNpieUEn5qDaRfaKB"
 	USDTContractAddressNile    = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"
-)
 
-const (
 	worker1PrivateKey = "4be2df367fe87cf69cb6b45de780cf03eb414238173fec895517bb94873766ed"
 	worker1Address    = "TYVWsM71CUYUQLRpuvbNSPYbuosWVJBpR3"
 
@@ -52,28 +50,21 @@ var (
 	}
 )
 
-func getContract() (*contract.Contract, error) {
-	cli, err := client.NewClient(grpcEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	contractAddress, err := common.DecodeAddress(collectContractAddress)
-	if err != nil {
-		return nil, err
-	}
-	return &contract.Contract{
-		Client:  cli,
+func newClient() *client.Client {
+	cli, _ := client.NewClient(grpcEndpoint)
+	return cli
+}
+
+func getContract() contract.Contract {
+	contractAddress, _ := common.DecodeAddress(collectContractAddress)
+	return contract.Contract{
 		Address: contractAddress,
-	}, nil
+	}
 }
 
 func TestAddWorker(t *testing.T) {
-	ct, err := getContract()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	collector := NewCollector(ct)
+	collector := NewCollector(getContract())
+	cli := newClient()
 
 	owner, err := common.DecodeAddress(ownerAddress)
 	if err != nil {
@@ -92,7 +83,7 @@ func TestAddWorker(t *testing.T) {
 		return
 	}
 
-	//feeLimit, err := ct.Client.GetEnergyCost(tsc)
+	//feeLimit, err := cli.GetEnergyCost(tsc)
 	//if err != nil {
 	//	t.Error(err)
 	//	return
@@ -104,7 +95,7 @@ func TestAddWorker(t *testing.T) {
 	feeLimit = feeLimit * 12
 	feeLimit = feeLimit / 10
 
-	tx, err := ct.Client.BuildContractTransaction(tsc, feeLimit)
+	tx, err := cli.BuildContractTransaction(tsc, feeLimit)
 	if err != nil {
 		return
 	}
@@ -119,7 +110,7 @@ func TestAddWorker(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ct.Client.BroadcastTransaction(tx.Transaction)
+	err = cli.BroadcastTransaction(tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
@@ -129,13 +120,9 @@ func TestAddWorker(t *testing.T) {
 }
 
 func TestRemoveWorker(t *testing.T) {
-	ct, err := getContract()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	collector := NewCollector(getContract())
+	cli := newClient()
 
-	collector := NewCollector(ct)
 	owner, err := common.DecodeAddress(ownerAddress)
 	if err != nil {
 		t.Error(err)
@@ -154,7 +141,7 @@ func TestRemoveWorker(t *testing.T) {
 		return
 	}
 
-	//feeLimit, err := ct.Client.GetEnergyCost(tsc)
+	//feeLimit, err := cli.GetEnergyCost(tsc)
 	//if err != nil {
 	//	t.Error(err)
 	//	return
@@ -166,7 +153,7 @@ func TestRemoveWorker(t *testing.T) {
 	feeLimit = feeLimit * 12
 	feeLimit = feeLimit / 10
 
-	tx, err := ct.Client.BuildContractTransaction(tsc, feeLimit)
+	tx, err := cli.BuildContractTransaction(tsc, feeLimit)
 	if err != nil {
 		return
 	}
@@ -181,7 +168,7 @@ func TestRemoveWorker(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ct.Client.BroadcastTransaction(tx.Transaction)
+	err = cli.BroadcastTransaction(tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
@@ -191,11 +178,7 @@ func TestRemoveWorker(t *testing.T) {
 }
 
 func TestApprove(t *testing.T) {
-	ct, err := getContract()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	cli := newClient()
 	contractAddress, err := common.DecodeAddress(USDTContractAddressNile)
 	if err != nil {
 		t.Error(err)
@@ -224,7 +207,7 @@ func TestApprove(t *testing.T) {
 	feeLimit = feeLimit * 12
 	feeLimit = feeLimit / 10
 
-	tx, err := ct.Client.Trc20Approve(contractAddress, from, spender, common.UnlimitedApproveAmount, int32(0), feeLimit)
+	tx, err := cli.Trc20Approve(contractAddress, from, spender, common.UnlimitedApproveAmount, int32(0), feeLimit)
 	if err != nil {
 		t.Error(err)
 		return
@@ -235,7 +218,7 @@ func TestApprove(t *testing.T) {
 		return
 	}
 
-	err = ct.Client.BroadcastTransaction(tx.Transaction)
+	err = cli.BroadcastTransaction(tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
@@ -245,12 +228,8 @@ func TestApprove(t *testing.T) {
 }
 
 func TestCollectSingle(t *testing.T) {
-	ct, err := getContract()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	collector := NewCollector(ct)
+	collector := NewCollector(getContract())
+	cli := newClient()
 
 	worker, err := common.DecodeAddress(workerAddress)
 	if err != nil {
@@ -275,7 +254,7 @@ func TestCollectSingle(t *testing.T) {
 		return
 	}
 
-	//energyCost, err := ct.Client.GetEnergyCost(tsc)
+	//energyCost, err := cli.GetEnergyCost(tsc)
 	//if err != nil {
 	//	t.Error(err)
 	//	return
@@ -286,7 +265,7 @@ func TestCollectSingle(t *testing.T) {
 	feeLimit = feeLimit * 12
 	feeLimit = feeLimit / 10
 
-	tx, err := ct.Client.BuildContractTransaction(tsc, feeLimit)
+	tx, err := cli.BuildContractTransaction(tsc, feeLimit)
 	if err != nil {
 		t.Error(err)
 		return
@@ -297,7 +276,7 @@ func TestCollectSingle(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ct.Client.BroadcastTransaction(tx.Transaction)
+	err = cli.BroadcastTransaction(tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
@@ -306,13 +285,8 @@ func TestCollectSingle(t *testing.T) {
 }
 
 func TestCollectBatch(t *testing.T) {
-	ct, err := getContract()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	collector := NewCollector(ct)
+	collector := NewCollector(getContract())
+	cli := newClient()
 	worker, err := common.DecodeAddress(workerAddress)
 	if err != nil {
 		t.Error(err)
@@ -340,7 +314,7 @@ func TestCollectBatch(t *testing.T) {
 		return
 	}
 
-	energyCost, err := ct.Client.GetEnergyCost(tsc)
+	energyCost, err := cli.GetEnergyCost(tsc)
 	if err != nil {
 		t.Error(err)
 		return
@@ -349,7 +323,7 @@ func TestCollectBatch(t *testing.T) {
 	feeLimit := energyCost * 100
 	feeLimit = feeLimit * 12
 	feeLimit = feeLimit / 10
-	tx, err := ct.Client.BuildContractTransaction(tsc, feeLimit)
+	tx, err := cli.BuildContractTransaction(tsc, feeLimit)
 	if err != nil {
 		t.Error(err)
 		return
@@ -359,7 +333,7 @@ func TestCollectBatch(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	err = ct.Client.BroadcastTransaction(tx.Transaction)
+	err = cli.BroadcastTransaction(tx.Transaction)
 	if err != nil {
 		t.Error(err)
 		return
